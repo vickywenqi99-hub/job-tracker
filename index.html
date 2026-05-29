@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>快点跑！</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -27,15 +28,15 @@ body {
   line-height: 1.5;
 }
 
-/* Login Page */
-.login-container {
+/* Login/Register Page */
+.auth-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
 }
-.login-card {
+.auth-card {
   background: var(--card-bg);
   border-radius: 16px;
   padding: 40px;
@@ -43,20 +44,20 @@ body {
   width: 100%;
   max-width: 400px;
 }
-.login-title {
+.auth-title {
   font-size: 28px;
   font-weight: 700;
   text-align: center;
   margin-bottom: 8px;
   color: var(--primary);
 }
-.login-subtitle {
+.auth-subtitle {
   text-align: center;
   color: var(--text-muted);
   margin-bottom: 32px;
   font-size: 14px;
 }
-.login-form input {
+.auth-form input {
   width: 100%;
   padding: 14px 16px;
   border: 1px solid var(--border);
@@ -65,11 +66,11 @@ body {
   margin-bottom: 16px;
   transition: border-color 0.2s;
 }
-.login-form input:focus {
+.auth-form input:focus {
   outline: none;
   border-color: var(--primary);
 }
-.login-btn {
+.auth-btn {
   width: 100%;
   padding: 14px;
   background: var(--primary);
@@ -81,21 +82,31 @@ body {
   cursor: pointer;
   transition: background 0.2s;
 }
-.login-btn:hover { background: var(--primary-hover); }
-.login-switch {
+.auth-btn:hover { background: var(--primary-hover); }
+.auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.auth-switch {
   text-align: center;
   margin-top: 20px;
   color: var(--text-muted);
   font-size: 14px;
 }
-.login-switch a {
+.auth-switch a {
   color: var(--primary);
   cursor: pointer;
   text-decoration: none;
 }
-.login-error {
+.auth-error {
   background: #fee;
   color: var(--danger);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  display: none;
+}
+.auth-success {
+  background: #e8f8f5;
+  color: var(--success);
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 16px;
@@ -125,10 +136,7 @@ body {
   align-items: center;
   gap: 12px;
 }
-.user-name {
-  font-size: 14px;
-  color: var(--text-muted);
-}
+.user-name { font-size: 14px; color: var(--text-muted); }
 .logout-btn {
   padding: 8px 16px;
   background: transparent;
@@ -139,11 +147,7 @@ body {
   cursor: pointer;
   transition: all 0.2s;
 }
-.logout-btn:hover {
-  background: var(--danger);
-  color: white;
-  border-color: var(--danger);
-}
+.logout-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
 
 .tabs {
   display: flex;
@@ -162,38 +166,14 @@ body {
   border-bottom: 2px solid transparent;
   transition: all 0.2s;
 }
-.tab-btn.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
-}
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
 .tab-btn:hover { color: var(--text); }
 
-.main-content {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
+.main-content { padding: 24px; max-width: 1200px; margin: 0 auto; }
+.card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-size: 18px; font-weight: 600; }
 
-/* Cards */
-.card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: var(--shadow);
-  margin-bottom: 20px;
-}
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-.card-title {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-/* Buttons */
 .btn {
   padding: 10px 16px;
   border: none;
@@ -215,7 +195,6 @@ body {
 .btn-secondary:hover { background: var(--bg); }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 
-/* Forms */
 .form-group { margin-bottom: 16px; }
 .form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
 .form-input, .form-select, .form-textarea {
@@ -226,43 +205,18 @@ body {
   font-size: 14px;
   transition: border-color 0.2s;
 }
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-}
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); }
 .form-textarea { min-height: 80px; resize: vertical; }
 .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
 .form-row .form-group { flex: 1; min-width: 150px; }
 
-/* Tables */
 .table-container { overflow-x: auto; }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-th {
-  background: var(--bg);
-  font-weight: 600;
-  color: var(--text-muted);
-  font-size: 12px;
-  text-transform: uppercase;
-}
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: var(--bg); font-weight: 600; color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
 tr:hover { background: var(--bg); }
 
-/* Status Tags */
-.status-tag {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-}
+.status-tag { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
 .status-pending { background: #fef5e7; color: var(--warning); }
 .status-submitted { background: #e8f4f8; color: var(--primary); }
 .status-screening { background: #e8f6f3; color: var(--success); }
@@ -271,173 +225,65 @@ tr:hover { background: var(--bg); }
 .status-accepted { background: #d4edda; color: #155724; }
 .status-rejected { background: #f8d7da; color: #721c24; }
 
-/* Interview Timeline */
-.interview-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.interview-tag {
-  background: var(--bg);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
+.interview-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.interview-tag { background: var(--bg); padding: 4px 8px; border-radius: 4px; font-size: 11px; color: var(--text-muted); border: 1px solid var(--border); }
 
-/* Stats */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.stat-card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
-  box-shadow: var(--shadow);
-}
-.stat-value {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--primary);
-}
-.stat-label {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: var(--card-bg); border-radius: 12px; padding: 16px; text-align: center; box-shadow: var(--shadow); }
+.stat-value { font-size: 32px; font-weight: 700; color: var(--primary); }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
-/* Modal */
 .modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.4);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
+  display: none; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
 }
 .modal-overlay.active { display: flex; }
 .modal {
-  background: var(--card-bg);
-  border-radius: 16px;
-  padding: 24px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 80vh;
-  overflow-y: auto;
+  background: var(--card-bg); border-radius: 16px; padding: 24px;
+  width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .modal-title { font-size: 20px; font-weight: 600; }
-.modal-close {
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-}
+.modal-close { background: transparent; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; padding: 4px; }
 
-/* Search & Filter */
-.search-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-.search-input {
-  flex: 1;
-  min-width: 200px;
-  padding: 10px 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
-}
-.filter-select {
-  padding: 10px 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
-  background: white;
-}
+.search-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.search-input { flex: 1; min-width: 200px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+.filter-select { padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white; }
 
-/* File Upload */
 .file-upload-area {
-  border: 2px dashed var(--border);
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 16px;
+  border: 2px dashed var(--border); border-radius: 8px;
+  padding: 20px; text-align: center; cursor: pointer;
+  transition: all 0.2s; margin-bottom: 16px;
 }
-.file-upload-area:hover {
-  border-color: var(--primary);
-  background: var(--bg);
-}
-.file-upload-area.has-file {
-  border-color: var(--success);
-  background: #e8f8f5;
-}
-.file-upload-icon {
-  font-size: 32px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-.file-upload-text {
-  font-size: 14px;
-  color: var(--text-muted);
-}
-.file-name {
-  font-size: 14px;
-  color: var(--success);
-  font-weight: 500;
-}
+.file-upload-area:hover { border-color: var(--primary); background: var(--bg); }
+.file-upload-area.has-file { border-color: var(--success); background: #e8f8f5; }
+.file-upload-icon { font-size: 32px; color: var(--text-muted); margin-bottom: 8px; }
+.file-upload-text { font-size: 14px; color: var(--text-muted); }
+.file-name { font-size: 14px; color: var(--success); font-weight: 500; }
 .file-input { display: none; }
 
-/* Resume List Item */
 .resume-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  background: var(--bg);
-  border-radius: 8px;
-  margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px; background: var(--bg); border-radius: 8px; margin-bottom: 8px;
 }
 .resume-info { flex: 1; }
-.resume-version {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
-}
-.resume-date {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.resume-summary {
-  font-size: 13px;
-  color: var(--text);
-  margin-top: 4px;
-}
-.resume-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.resume-version { font-size: 16px; font-weight: 600; color: var(--text); }
+.resume-date { font-size: 12px; color: var(--text-muted); }
+.resume-summary { font-size: 13px; color: var(--text); margin-top: 4px; }
+.resume-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* Responsive */
+.loading { text-align: center; padding: 40px; color: var(--text-muted); }
+.spinner {
+  display: inline-block; width: 24px; height: 24px;
+  border: 3px solid var(--border); border-top-color: var(--primary);
+  border-radius: 50%; animation: spin 0.6s linear infinite;
+  margin-bottom: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 @media (max-width: 768px) {
   .header { padding: 12px 16px; }
   .header-title { font-size: 20px; }
@@ -452,7 +298,6 @@ tr:hover { background: var(--bg); }
   .modal { padding: 16px; }
 }
 
-/* Utility */
 .hidden { display: none; }
 .text-center { text-align: center; }
 .text-muted { color: var(--text-muted); }
@@ -463,31 +308,32 @@ tr:hover { background: var(--bg); }
 </head>
 <body>
 
-<!-- Login Page -->
-<div id="loginPage" class="login-container">
-  <div class="login-card">
-    <div class="login-title">快点跑！</div>
-    <div class="login-subtitle">投递追踪系统 · 数据本地存储</div>
+<!-- Auth Page -->
+<div id="authPage" class="auth-container">
+  <div class="auth-card">
+    <div class="auth-title">快点跑！</div>
+    <div class="auth-subtitle">云端同步 · 多设备共享</div>
     
-    <div id="loginError" class="login-error"></div>
+    <div id="authError" class="auth-error"></div>
+    <div id="authSuccess" class="auth-success"></div>
     
-    <!-- Login Form -->
-    <div id="loginForm" class="login-form">
-      <input type="text" id="loginUsername" placeholder="用户名" autocomplete="username">
+    <!-- Login -->
+    <div id="loginForm" class="auth-form">
+      <input type="email" id="loginEmail" placeholder="邮箱" autocomplete="email">
       <input type="password" id="loginPassword" placeholder="密码" autocomplete="current-password">
-      <button class="login-btn" onclick="handleLogin()">登录</button>
-      <div class="login-switch">
-        还没有账号？ <a onclick="showRegister()">注册新账号</a>
+      <button class="auth-btn" id="loginBtn" onclick="handleLogin()">登录</button>
+      <div class="auth-switch">
+        还没有账号？ <a onclick="showRegister()">注册</a>
       </div>
     </div>
     
-    <!-- Register Form -->
-    <div id="registerForm" class="login-form hidden">
-      <input type="text" id="regUsername" placeholder="用户名" autocomplete="username">
-      <input type="password" id="regPassword" placeholder="密码" autocomplete="new-password">
+    <!-- Register -->
+    <div id="registerForm" class="auth-form hidden">
+      <input type="email" id="regEmail" placeholder="邮箱" autocomplete="email">
+      <input type="password" id="regPassword" placeholder="密码（至少 6 位）" autocomplete="new-password">
       <input type="password" id="regPasswordConfirm" placeholder="确认密码" autocomplete="new-password">
-      <button class="login-btn" onclick="handleRegister()">注册</button>
-      <div class="login-switch">
+      <button class="auth-btn" id="regBtn" onclick="handleRegister()">注册</button>
+      <div class="auth-switch">
         已有账号？ <a onclick="showLogin()">返回登录</a>
       </div>
     </div>
@@ -512,10 +358,8 @@ tr:hover { background: var(--bg); }
   <div class="main-content">
     <!-- Jobs Tab -->
     <div id="jobsTab">
-      <!-- Stats -->
-      <div class="stats-grid" id="statsGrid"></div>
+      <div class="stats-grid" id="statsGrid"><div class="loading"><div class="spinner"></div><p>加载中...</p></div></div>
       
-      <!-- Search & Filter -->
       <div class="search-bar">
         <input type="text" class="search-input" id="jobSearch" placeholder="搜索公司、职位..." oninput="renderJobs()">
         <select class="filter-select" id="statusFilter" onchange="renderJobs()">
@@ -529,26 +373,12 @@ tr:hover { background: var(--bg); }
           <option value="rejected">已拒绝</option>
         </select>
         <button class="btn btn-primary" onclick="showAddJobModal()">+ 添加投递</button>
-        <button class="btn btn-secondary" onclick="exportData()">导出</button>
-        <button class="btn btn-secondary" onclick="importData()">导入</button>
       </div>
       
-      <!-- Jobs Table -->
       <div class="card">
         <div class="table-container">
           <table id="jobsTable">
-            <thead>
-              <tr>
-                <th>公司</th>
-                <th>职位</th>
-                <th>薪资</th>
-                <th>地点</th>
-                <th>状态</th>
-                <th>投递日期</th>
-                <th>面试记录</th>
-                <th>操作</th>
-              </tr>
-            </thead>
+            <thead><tr><th>公司</th><th>职位</th><th>薪资</th><th>地点</th><th>状态</th><th>投递日期</th><th>面试记录</th><th>操作</th></tr></thead>
             <tbody id="jobsBody"></tbody>
           </table>
         </div>
@@ -564,308 +394,209 @@ tr:hover { background: var(--bg); }
         </div>
         <div id="resumesList"></div>
       </div>
-      
       <div class="card mt-4">
         <div class="card-title mb-4">数据说明</div>
-        <p class="text-muted">简历文件以 Base64 格式存储在浏览器本地，单个文件建议不超过 5MB。支持 PDF、Word、图片等格式。</p>
+        <p class="text-muted">简历文件存储在 Supabase 云端，单个文件建议不超过 5MB。支持 PDF、Word、图片等格式。</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Add Job Modal -->
+<!-- Job Modal -->
 <div id="jobModal" class="modal-overlay">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="jobModalTitle">添加投递记录</div>
-      <button class="modal-close" onclick="closeJobModal()">×</button>
+      <button class="modal-close" onclick="closeJobModal()">&times;</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">公司名称 *</label>
-      <input type="text" class="form-input" id="jobCompany" required>
+    <div class="form-group"><label class="form-label">公司名称 *</label><input type="text" class="form-input" id="jobCompany" required></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">职位名称 *</label><input type="text" class="form-input" id="jobPosition" required></div>
+      <div class="form-group"><label class="form-label">薪资范围</label><input type="text" class="form-input" id="jobSalary" placeholder="如: 20-30K"></div>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">职位名称 *</label>
-        <input type="text" class="form-input" id="jobPosition" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">薪资范围</label>
-        <input type="text" class="form-input" id="jobSalary" placeholder="如: 20-30K">
-      </div>
+      <div class="form-group"><label class="form-label">工作地点</label><input type="text" class="form-input" id="jobLocation"></div>
+      <div class="form-group"><label class="form-label">投递日期</label><input type="date" class="form-input" id="jobDate"></div>
     </div>
+    <div class="form-group"><label class="form-label">投递链接</label><input type="url" class="form-input" id="jobLink" placeholder="https://..."></div>
     <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">工作地点</label>
-        <input type="text" class="form-input" id="jobLocation">
-      </div>
-      <div class="form-group">
-        <label class="form-label">投递日期</label>
-        <input type="date" class="form-input" id="jobDate">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">投递链接</label>
-      <input type="url" class="form-input" id="jobLink" placeholder="https://...">
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">状态</label>
+      <div class="form-group"><label class="form-label">状态</label>
         <select class="form-select" id="jobStatus">
-          <option value="pending">待投递</option>
-          <option value="submitted">已投递</option>
-          <option value="screening">简历初筛</option>
-          <option value="interview">面试中</option>
-          <option value="offer">Offer</option>
-          <option value="accepted">已接受</option>
-          <option value="rejected">已拒绝</option>
+          <option value="pending">待投递</option><option value="submitted">已投递</option><option value="screening">简历初筛</option>
+          <option value="interview">面试中</option><option value="offer">Offer</option><option value="accepted">已接受</option><option value="rejected">已拒绝</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">联系人</label>
-        <input type="text" class="form-input" id="jobContact">
-      </div>
+      <div class="form-group"><label class="form-label">联系人</label><input type="text" class="form-input" id="jobContact"></div>
     </div>
-    <div class="form-group">
-      <label class="form-label">面试记录</label>
-      <textarea class="form-textarea" id="jobInterview" placeholder="格式: 一面 2026-05-20 | 二面 2026-05-25"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">备注</label>
-      <textarea class="form-textarea" id="jobNotes"></textarea>
-    </div>
+    <div class="form-group"><label class="form-label">面试记录</label><textarea class="form-textarea" id="jobInterview" placeholder="格式: 一面 2026-05-20 | 二面 2026-05-25"></textarea></div>
+    <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="jobNotes"></textarea></div>
     <input type="hidden" id="jobEditId">
-    <button class="btn btn-primary" style="width:100%" onclick="saveJob()">保存</button>
+    <button class="btn btn-primary" style="width:100%" id="jobSaveBtn" onclick="saveJob()">保存</button>
   </div>
 </div>
 
-<!-- Add Resume Modal -->
+<!-- Resume Modal -->
 <div id="resumeModal" class="modal-overlay">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="resumeModalTitle">新增简历版本</div>
-      <button class="modal-close" onclick="closeResumeModal()">×</button>
+      <button class="modal-close" onclick="closeResumeModal()">&times;</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">版本号 *</label>
-      <input type="text" class="form-input" id="resumeVersion" placeholder="如: v1.0, v2.0-final">
-    </div>
-    <div class="form-group">
-      <label class="form-label">更新日期</label>
-      <input type="date" class="form-input" id="resumeDate">
-    </div>
-    <div class="form-group">
-      <label class="form-label">修改摘要</label>
-      <textarea class="form-textarea" id="resumeSummary" placeholder="本次更新的主要内容..."></textarea>
-    </div>
-    
-    <!-- File Upload -->
+    <div class="form-group"><label class="form-label">版本号 *</label><input type="text" class="form-input" id="resumeVersion" placeholder="如: v1.0"></div>
+    <div class="form-group"><label class="form-label">更新日期</label><input type="date" class="form-input" id="resumeDate"></div>
+    <div class="form-group"><label class="form-label">修改摘要</label><textarea class="form-textarea" id="resumeSummary" placeholder="本次更新的主要内容..."></textarea></div>
     <div class="form-group">
       <label class="form-label">简历文件</label>
       <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('resumeFile').click()">
         <div class="file-upload-icon">📎</div>
-        <div class="file-upload-text" id="fileUploadText">点击上传或拖拽文件到此处</div>
+        <div class="file-upload-text" id="fileUploadText">点击上传或拖拽文件</div>
         <div class="file-name" id="fileNameDisplay"></div>
       </div>
       <input type="file" class="file-input" id="resumeFile" onchange="handleFileSelect(event)">
     </div>
-    
     <input type="hidden" id="resumeEditId">
-    <button class="btn btn-primary" style="width:100%" onclick="saveResume()">保存</button>
+    <button class="btn btn-primary" style="width:100%" id="resumeSaveBtn" onclick="saveResume()">保存</button>
   </div>
 </div>
 
-<!-- Job Detail Modal -->
+<!-- Detail Modal -->
 <div id="detailModal" class="modal-overlay">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="detailTitle">投递详情</div>
-      <button class="modal-close" onclick="closeDetailModal()">×</button>
+      <button class="modal-close" onclick="closeDetailModal()">&times;</button>
     </div>
     <div id="detailContent"></div>
   </div>
 </div>
 
 <script>
-// ==================== Auth System ====================
-const AUTH_KEY = 'jr_auth_users';
-const SESSION_KEY = 'jr_current_user';
+// ==================== Supabase Init ====================
+const supabase = window.supabase.createClient(
+  'https://sbthqgovzodhypecoddm.supabase.co',
+  'sb_publishable_ZCrk4VcdTp4vhjHqbNhPoQ__dQgzIpr'
+);
 
-function getUsers() {
-  const data = localStorage.getItem(AUTH_KEY);
-  return data ? JSON.parse(data) : {};
-}
-
-function saveUsers(users) {
-  localStorage.setItem(AUTH_KEY, JSON.stringify(users));
-}
-
-function getCurrentUser() {
-  return localStorage.getItem(SESSION_KEY);
-}
-
-function setCurrentUser(username) {
-  localStorage.setItem(SESSION_KEY, username);
-}
-
-function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
-}
-
-function hashPassword(password) {
-  let hash = 0;
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return hash.toString(16);
-}
-
+// ==================== Auth ====================
 function showLogin() {
   document.getElementById('loginForm').classList.remove('hidden');
   document.getElementById('registerForm').classList.add('hidden');
-  document.getElementById('loginError').style.display = 'none';
+  hideAuthMessages();
 }
 
 function showRegister() {
   document.getElementById('loginForm').classList.add('hidden');
   document.getElementById('registerForm').classList.remove('hidden');
-  document.getElementById('loginError').style.display = 'none';
+  hideAuthMessages();
 }
 
-function showError(msg) {
-  const el = document.getElementById('loginError');
+function hideAuthMessages() {
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authSuccess').style.display = 'none';
+}
+
+function showAuthError(msg) {
+  var el = document.getElementById('authError');
   el.textContent = msg;
   el.style.display = 'block';
+  document.getElementById('authSuccess').style.display = 'none';
 }
 
-function handleLogin() {
-  const username = document.getElementById('loginUsername').value.trim();
-  const password = document.getElementById('loginPassword').value;
+function showAuthSuccess(msg) {
+  var el = document.getElementById('authSuccess');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('authError').style.display = 'none';
+}
+
+async function handleRegister() {
+  var email = document.getElementById('regEmail').value.trim();
+  var password = document.getElementById('regPassword').value;
+  var confirm = document.getElementById('regPasswordConfirm').value;
   
-  if (!username || !password) {
-    showError('请输入用户名和密码');
-    return;
+  if (!email || !password) { showAuthError('请填写邮箱和密码'); return; }
+  if (password.length < 6) { showAuthError('密码至少 6 位'); return; }
+  if (password !== confirm) { showAuthError('两次密码不一致'); return; }
+  
+  var btn = document.getElementById('regBtn');
+  btn.disabled = true;
+  btn.textContent = '注册中...';
+  
+  var { error } = await supabase.auth.signUp({ email: email, password: password });
+  
+  btn.disabled = false;
+  btn.textContent = '注册';
+  
+  if (error) {
+    showAuthError(error.message);
+  } else {
+    showAuthSuccess('注册成功！请登录');
+    showLogin();
   }
+}
+
+async function handleLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var password = document.getElementById('loginPassword').value;
   
-  const users = getUsers();
-  if (!users[username]) {
-    showError('用户不存在');
-    return;
+  if (!email || !password) { showAuthError('请填写邮箱和密码'); return; }
+  
+  var btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = '登录中...';
+  
+  var { error } = await supabase.auth.signInWithPassword({ email: email, password: password });
+  
+  btn.disabled = false;
+  btn.textContent = '登录';
+  
+  if (error) {
+    showAuthError('登录失败：' + error.message);
   }
-  
-  if (users[username].password !== hashPassword(password)) {
-    showError('密码错误');
-    return;
-  }
-  
-  setCurrentUser(username);
-  showApp();
+  // Session is handled by onAuthStateChange
 }
 
-function handleRegister() {
-  const username = document.getElementById('regUsername').value.trim();
-  const password = document.getElementById('regPassword').value;
-  const passwordConfirm = document.getElementById('regPasswordConfirm').value;
-  
-  if (!username || !password) {
-    showError('请输入用户名和密码');
-    return;
-  }
-  
-  if (username.length < 2) {
-    showError('用户名至少2个字符');
-    return;
-  }
-  
-  if (password.length < 4) {
-    showError('密码至少4个字符');
-    return;
-  }
-  
-  if (password !== passwordConfirm) {
-    showError('两次密码不一致');
-    return;
-  }
-  
-  const users = getUsers();
-  if (users[username]) {
-    showError('用户名已存在');
-    return;
-  }
-  
-  users[username] = {
-    password: hashPassword(password),
-    createdAt: new Date().toISOString()
-  };
-  saveUsers(users);
-  
-  setCurrentUser(username);
-  showApp();
+async function handleLogout() {
+  await supabase.auth.signOut();
 }
 
-function handleLogout() {
-  clearSession();
-  showLoginPage();
+// ==================== Data Layer ====================
+async function fetchJobs() {
+  var { data, error } = await supabase
+    .from('jobs')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { console.error('fetchJobs error:', error); return []; }
+  return data || [];
 }
 
-function showLoginPage() {
-  document.getElementById('loginPage').style.display = 'flex';
-  document.getElementById('appPage').style.display = 'none';
-  document.getElementById('loginUsername').value = '';
-  document.getElementById('loginPassword').value = '';
-  document.getElementById('loginError').style.display = 'none';
-}
-
-function showApp() {
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('appPage').style.display = 'block';
-  document.getElementById('currentUser').textContent = getCurrentUser();
-  renderAll();
-}
-
-// ==================== Data Keys ====================
-function getDataKey(type) {
-  const user = getCurrentUser();
-  return 'jr_' + user + '_' + type;
-}
-
-function getJobs() {
-  const data = localStorage.getItem(getDataKey('jobs'));
-  return data ? JSON.parse(data) : [];
-}
-
-function saveJobs(jobs) {
-  localStorage.setItem(getDataKey('jobs'), JSON.stringify(jobs));
-}
-
-function getResumes() {
-  const data = localStorage.getItem(getDataKey('resumes'));
-  return data ? JSON.parse(data) : [];
-}
-
-function saveResumes(resumes) {
-  localStorage.setItem(getDataKey('resumes'), JSON.stringify(resumes));
+async function fetchResumes() {
+  var { data, error } = await supabase
+    .from('resumes')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { console.error('fetchResumes error:', error); return []; }
+  return data || [];
 }
 
 // ==================== Render ====================
-function renderAll() {
-  renderStats();
+var currentJobs = [];
+var currentResumes = [];
+
+async function renderAll() {
+  renderStats(currentJobs);
   renderJobs();
   renderResumes();
 }
 
-function renderStats() {
-  const jobs = getJobs();
-  const stats = {
+function renderStats(jobs) {
+  var stats = {
     total: jobs.length,
     pending: jobs.filter(function(j) { return j.status === 'pending'; }).length,
     submitted: jobs.filter(function(j) { return j.status === 'submitted'; }).length,
     interview: jobs.filter(function(j) { return j.status === 'interview'; }).length,
     offer: jobs.filter(function(j) { return j.status === 'offer'; }).length
   };
-  
   document.getElementById('statsGrid').innerHTML = [
     '<div class="stat-card"><div class="stat-value">' + stats.total + '</div><div class="stat-label">总投递</div></div>',
     '<div class="stat-card"><div class="stat-value">' + stats.pending + '</div><div class="stat-label">待投递</div></div>',
@@ -876,14 +607,13 @@ function renderStats() {
 }
 
 function renderJobs() {
-  var jobs = getJobs();
   var search = document.getElementById('jobSearch').value.toLowerCase();
   var statusFilter = document.getElementById('statusFilter').value;
   
-  var filtered = jobs.filter(function(job) {
-    var matchSearch = !search || 
-      job.company.toLowerCase().indexOf(search) >= 0 ||
-      job.position.toLowerCase().indexOf(search) >= 0;
+  var filtered = currentJobs.filter(function(job) {
+    var matchSearch = !search ||
+      (job.company && job.company.toLowerCase().indexOf(search) >= 0) ||
+      (job.position && job.position.toLowerCase().indexOf(search) >= 0);
     var matchStatus = !statusFilter || job.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -891,15 +621,15 @@ function renderJobs() {
   var tbody = document.getElementById('jobsBody');
   
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无数据</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无投递记录</td></tr>';
     return;
   }
   
   tbody.innerHTML = filtered.map(function(job) {
     return [
       '<tr>',
-      '<td><a style="cursor:pointer;color:var(--primary)" onclick="showDetail(\'' + job.id + '\')">' + job.company + '</a></td>',
-      '<td>' + job.position + '</td>',
+      '<td><a style="cursor:pointer;color:var(--primary)" onclick="showDetail(\'' + job.id + '\')">' + (job.company || '') + '</a></td>',
+      '<td>' + (job.position || '') + '</td>',
       '<td>' + (job.salary || '-') + '</td>',
       '<td>' + (job.location || '-') + '</td>',
       '<td>' + getStatusTag(job.status) + '</td>',
@@ -919,71 +649,61 @@ function renderInterviewTags(text) {
     var p = parts[i].trim();
     if (p) html.push('<span class="interview-tag">' + p + '</span>');
   }
-  if (html.length === 0) return '-';
-  return '<div class="interview-tags">' + html.join('') + '</div>';
+  return html.length ? '<div class="interview-tags">' + html.join('') + '</div>' : '-';
 }
 
 function getStatusTag(status) {
   var labels = {
-    pending: '待投递',
-    submitted: '已投递',
-    screening: '简历初筛',
-    interview: '面试中',
-    offer: 'Offer',
-    accepted: '已接受',
-    rejected: '已拒绝'
+    pending: '待投递', submitted: '已投递', screening: '简历初筛',
+    interview: '面试中', offer: 'Offer', accepted: '已接受', rejected: '已拒绝'
   };
   return '<span class="status-tag status-' + status + '">' + (labels[status] || status) + '</span>';
 }
 
 function getActionButtons(job) {
   var flows = {
-    pending: '<button class="btn btn-primary btn-sm" onclick="advanceStatus(\'' + job.id + '\')">投递</button>',
-    submitted: '<button class="btn btn-success btn-sm" onclick="advanceStatus(\'' + job.id + '\')">初筛</button>',
-    screening: '<button class="btn btn-warning btn-sm" onclick="advanceStatus(\'' + job.id + '\')">面试</button>',
-    interview: '<button class="btn btn-success btn-sm" onclick="advanceStatus(\'' + job.id + '\')">Offer</button>'
+    pending: '<button class="btn btn-primary btn-sm" onclick="advanceStatus(' + job.id + ')">投递</button>',
+    submitted: '<button class="btn btn-success btn-sm" onclick="advanceStatus(' + job.id + ')">初筛</button>',
+    screening: '<button class="btn btn-warning btn-sm" onclick="advanceStatus(' + job.id + ')">面试</button>',
+    interview: '<button class="btn btn-success btn-sm" onclick="advanceStatus(' + job.id + ')">Offer</button>'
   };
   var statusBtn = flows[job.status] || '';
   return [
     statusBtn,
-    '<button class="btn btn-secondary btn-sm" onclick="editJob(\'' + job.id + '\')">编辑</button>',
-    '<button class="btn btn-danger btn-sm" onclick="deleteJob(\'' + job.id + '\')">删除</button>'
+    '<button class="btn btn-secondary btn-sm" onclick="editJob(' + job.id + ')">编辑</button>',
+    '<button class="btn btn-danger btn-sm" onclick="deleteJob(' + job.id + ')">删除</button>'
   ].filter(function(b) { return b; }).join('');
 }
 
 function renderResumes() {
-  var resumes = getResumes();
   var list = document.getElementById('resumesList');
-  
-  if (resumes.length === 0) {
+  if (currentResumes.length === 0) {
     list.innerHTML = '<p class="text-center text-muted">暂无简历记录</p>';
     return;
   }
   
-  var sorted = [].concat(resumes).sort(function(a, b) {
-    return new Date(b.date) - new Date(a.date);
+  var sorted = [].concat(currentResumes).sort(function(a, b) {
+    return new Date(b.date || 0) - new Date(a.date || 0);
   });
   
   list.innerHTML = sorted.map(function(r) {
-    var downloadBtn = r.fileData ? '<button class="btn btn-success btn-sm" onclick="downloadResume(\'' + r.id + '\')">下载</button>' : '';
     return [
       '<div class="resume-item">',
       '<div class="resume-info">',
-      '<div class="resume-version">' + r.version + '</div>',
+      '<div class="resume-version">' + (r.version || '') + '</div>',
       '<div class="resume-date">' + (r.date || '未设置日期') + '</div>',
       r.summary ? '<div class="resume-summary">' + r.summary + '</div>' : '',
       '</div>',
       '<div class="resume-actions">',
-      downloadBtn,
-      '<button class="btn btn-secondary btn-sm" onclick="editResume(\'' + r.id + '\')">编辑</button>',
-      '<button class="btn btn-danger btn-sm" onclick="deleteResume(\'' + r.id + '\')">删除</button>',
-      '</div>',
-      '</div>'
+      r.file_data ? '<button class="btn btn-success btn-sm" onclick="downloadResume(\'' + r.id + '\')">下载</button>' : '',
+      '<button class="btn btn-secondary btn-sm" onclick="editResume(' + r.id + ')">编辑</button>',
+      '<button class="btn btn-danger btn-sm" onclick="deleteResume(' + r.id + ')">删除</button>',
+      '</div></div>'
     ].join('');
   }).join('');
 }
 
-// ==================== Job Operations ====================
+// ==================== Job CRUD ====================
 function showAddJobModal() {
   document.getElementById('jobModalTitle').textContent = '添加投递记录';
   document.getElementById('jobEditId').value = '';
@@ -1001,22 +721,21 @@ function showAddJobModal() {
 }
 
 function editJob(id) {
-  var jobs = getJobs();
   var job = null;
-  for (var i = 0; i < jobs.length; i++) {
-    if (jobs[i].id === id) { job = jobs[i]; break; }
+  for (var i = 0; i < currentJobs.length; i++) {
+    if (currentJobs[i].id === id) { job = currentJobs[i]; break; }
   }
   if (!job) return;
   
   document.getElementById('jobModalTitle').textContent = '编辑投递记录';
   document.getElementById('jobEditId').value = id;
-  document.getElementById('jobCompany').value = job.company;
-  document.getElementById('jobPosition').value = job.position;
+  document.getElementById('jobCompany').value = job.company || '';
+  document.getElementById('jobPosition').value = job.position || '';
   document.getElementById('jobSalary').value = job.salary || '';
   document.getElementById('jobLocation').value = job.location || '';
   document.getElementById('jobDate').value = job.date || '';
   document.getElementById('jobLink').value = job.link || '';
-  document.getElementById('jobStatus').value = job.status;
+  document.getElementById('jobStatus').value = job.status || 'pending';
   document.getElementById('jobContact').value = job.contact || '';
   document.getElementById('jobInterview').value = job.interview || '';
   document.getElementById('jobNotes').value = job.notes || '';
@@ -1027,87 +746,80 @@ function closeJobModal() {
   document.getElementById('jobModal').classList.remove('active');
 }
 
-function saveJob() {
+async function saveJob() {
   var company = document.getElementById('jobCompany').value.trim();
   var position = document.getElementById('jobPosition').value.trim();
   
-  if (!company || !position) {
-    alert('请填写公司名称和职位名称');
-    return;
-  }
+  if (!company || !position) { alert('请填写公司名称和职位名称'); return; }
   
   var editId = document.getElementById('jobEditId').value;
-  var jobs = getJobs();
+  var btn = document.getElementById('jobSaveBtn');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
   
   var jobData = {
-    id: editId || Date.now().toString(),
     company: company,
     position: position,
     salary: document.getElementById('jobSalary').value.trim(),
     location: document.getElementById('jobLocation').value.trim(),
-    date: document.getElementById('jobDate').value,
+    date: document.getElementById('jobDate').value || null,
     link: document.getElementById('jobLink').value.trim(),
     status: document.getElementById('jobStatus').value,
     contact: document.getElementById('jobContact').value.trim(),
     interview: document.getElementById('jobInterview').value.trim(),
     notes: document.getElementById('jobNotes').value.trim(),
-    updatedAt: new Date().toISOString()
+    updated_at: new Date().toISOString()
   };
   
+  var error;
   if (editId) {
-    for (var i = 0; i < jobs.length; i++) {
-      if (jobs[i].id === editId) { jobs[i] = jobData; break; }
-    }
+    var r = await supabase.from('jobs').update(jobData).eq('id', editId);
+    error = r.error;
   } else {
-    jobs.push(jobData);
+    var r = await supabase.from('jobs').insert([jobData]);
+    error = r.error;
   }
   
-  saveJobs(jobs);
+  btn.disabled = false;
+  btn.textContent = '保存';
+  
+  if (error) { alert('保存失败: ' + error.message); return; }
+  
   closeJobModal();
-  renderAll();
+  await refreshAll();
 }
 
-function deleteJob(id) {
+async function deleteJob(id) {
   if (!confirm('确定删除这条投递记录？')) return;
-  var jobs = [];
-  var allJobs = getJobs();
-  for (var i = 0; i < allJobs.length; i++) {
-    if (allJobs[i].id !== id) jobs.push(allJobs[i]);
-  }
-  saveJobs(jobs);
-  renderAll();
+  var { error } = await supabase.from('jobs').delete().eq('id', id);
+  if (error) { alert('删除失败: ' + error.message); return; }
+  await refreshAll();
 }
 
-function advanceStatus(id) {
-  var flows = {
-    pending: 'submitted',
-    submitted: 'screening',
-    screening: 'interview',
-    interview: 'offer'
-  };
-  var jobs = getJobs();
-  for (var i = 0; i < jobs.length; i++) {
-    if (jobs[i].id === id) {
-      if (flows[jobs[i].status]) {
-        jobs[i].status = flows[jobs[i].status];
-        jobs[i].updatedAt = new Date().toISOString();
-        break;
-      }
-    }
+async function advanceStatus(id) {
+  var flows = { pending: 'submitted', submitted: 'screening', screening: 'interview', interview: 'offer' };
+  var job = null;
+  for (var i = 0; i < currentJobs.length; i++) {
+    if (currentJobs[i].id === id) { job = currentJobs[i]; break; }
   }
-  saveJobs(jobs);
-  renderAll();
+  if (!job || !flows[job.status]) return;
+  
+  var { error } = await supabase.from('jobs').update({
+    status: flows[job.status],
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) { alert('操作失败: ' + error.message); return; }
+  await refreshAll();
 }
 
 function showDetail(id) {
-  var jobs = getJobs();
   var job = null;
-  for (var i = 0; i < jobs.length; i++) {
-    if (jobs[i].id === id) { job = jobs[i]; break; }
+  for (var i = 0; i < currentJobs.length; i++) {
+    if (currentJobs[i].id === id) { job = currentJobs[i]; break; }
   }
   if (!job) return;
   
-  document.getElementById('detailTitle').textContent = job.company + ' - ' + job.position;
+  document.getElementById('detailTitle').textContent = (job.company || '') + ' - ' + (job.position || '');
   document.getElementById('detailContent').innerHTML = [
     '<div class="form-group"><strong>薪资范围：</strong> ' + (job.salary || '未填写') + '</div>',
     '<div class="form-group"><strong>工作地点：</strong> ' + (job.location || '未填写') + '</div>',
@@ -1117,7 +829,7 @@ function showDetail(id) {
     '<div class="form-group"><strong>联系人：</strong> ' + (job.contact || '未填写') + '</div>',
     '<div class="form-group"><strong>面试记录：</strong><br>' + (renderInterviewTags(job.interview) || '无') + '</div>',
     '<div class="form-group"><strong>备注：</strong><br>' + (job.notes || '无') + '</div>',
-    '<div class="text-muted mt-4" style="font-size:12px">最后更新：' + (job.updatedAt || '未知') + '</div>'
+    '<div class="text-muted mt-4" style="font-size:12px">最后更新：' + (job.updated_at || '未知') + '</div>'
   ].join('');
   document.getElementById('detailModal').classList.add('active');
 }
@@ -1126,7 +838,7 @@ function closeDetailModal() {
   document.getElementById('detailModal').classList.remove('active');
 }
 
-// ==================== Resume Operations ====================
+// ==================== Resume CRUD ====================
 var currentFileData = null;
 var currentFileName = null;
 
@@ -1143,20 +855,19 @@ function showAddResumeModal() {
 }
 
 function editResume(id) {
-  var resumes = getResumes();
   var resume = null;
-  for (var i = 0; i < resumes.length; i++) {
-    if (resumes[i].id === id) { resume = resumes[i]; break; }
+  for (var i = 0; i < currentResumes.length; i++) {
+    if (currentResumes[i].id === id) { resume = currentResumes[i]; break; }
   }
   if (!resume) return;
   
   document.getElementById('resumeModalTitle').textContent = '编辑简历版本';
   document.getElementById('resumeEditId').value = id;
-  document.getElementById('resumeVersion').value = resume.version;
+  document.getElementById('resumeVersion').value = resume.version || '';
   document.getElementById('resumeDate').value = resume.date || '';
   document.getElementById('resumeSummary').value = resume.summary || '';
-  currentFileData = resume.fileData;
-  currentFileName = resume.fileName;
+  currentFileData = resume.file_data || null;
+  currentFileName = resume.file_name || null;
   updateFileUploadUI();
   document.getElementById('resumeModal').classList.add('active');
 }
@@ -1168,19 +879,11 @@ function closeResumeModal() {
 function handleFileSelect(event) {
   var file = event.target.files[0];
   if (!file) return;
-  
-  if (file.size > 5 * 1024 * 1024) {
-    alert('文件过大，建议不超过5MB');
-    return;
-  }
+  if (file.size > 5 * 1024 * 1024) { alert('文件过大，建议不超过5MB'); return; }
   
   currentFileName = file.name;
-  
   var reader = new FileReader();
-  reader.onload = function(e) {
-    currentFileData = e.target.result;
-    updateFileUploadUI();
-  };
+  reader.onload = function(e) { currentFileData = e.target.result; updateFileUploadUI(); };
   reader.readAsDataURL(file);
 }
 
@@ -1188,7 +891,6 @@ function updateFileUploadUI() {
   var area = document.getElementById('fileUploadArea');
   var textEl = document.getElementById('fileUploadText');
   var nameEl = document.getElementById('fileNameDisplay');
-  
   if (currentFileName) {
     area.classList.add('has-file');
     textEl.style.display = 'none';
@@ -1200,109 +902,60 @@ function updateFileUploadUI() {
   }
 }
 
-function saveResume() {
+async function saveResume() {
   var version = document.getElementById('resumeVersion').value.trim();
-  
-  if (!version) {
-    alert('请填写版本号');
-    return;
-  }
+  if (!version) { alert('请填写版本号'); return; }
   
   var editId = document.getElementById('resumeEditId').value;
-  var resumes = getResumes();
+  var btn = document.getElementById('resumeSaveBtn');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
   
   var resumeData = {
-    id: editId || Date.now().toString(),
     version: version,
-    date: document.getElementById('resumeDate').value,
+    date: document.getElementById('resumeDate').value || null,
     summary: document.getElementById('resumeSummary').value.trim(),
-    fileName: currentFileName,
-    fileData: currentFileData,
-    updatedAt: new Date().toISOString()
+    file_name: currentFileName,
+    file_data: currentFileData,
+    updated_at: new Date().toISOString()
   };
   
+  var error;
   if (editId) {
-    for (var i = 0; i < resumes.length; i++) {
-      if (resumes[i].id === editId) { resumes[i] = resumeData; break; }
-    }
+    var r = await supabase.from('resumes').update(resumeData).eq('id', editId);
+    error = r.error;
   } else {
-    resumes.push(resumeData);
+    var r = await supabase.from('resumes').insert([resumeData]);
+    error = r.error;
   }
   
-  saveResumes(resumes);
+  btn.disabled = false;
+  btn.textContent = '保存';
+  
+  if (error) { alert('保存失败: ' + error.message); return; }
   closeResumeModal();
-  renderResumes();
+  await refreshAll();
 }
 
-function deleteResume(id) {
-  if (!confirm('确定删除这条简历记录？附件文件也会一起删除。')) return;
-  var resumes = [];
-  var allResumes = getResumes();
-  for (var i = 0; i < allResumes.length; i++) {
-    if (allResumes[i].id !== id) resumes.push(allResumes[i]);
-  }
-  saveResumes(resumes);
-  renderResumes();
+async function deleteResume(id) {
+  if (!confirm('确定删除这条简历记录？')) return;
+  var { error } = await supabase.from('resumes').delete().eq('id', id);
+  if (error) { alert('删除失败: ' + error.message); return; }
+  await refreshAll();
 }
 
 function downloadResume(id) {
-  var resumes = getResumes();
-  var resume = null;
-  for (var i = 0; i < resumes.length; i++) {
-    if (resumes[i].id === id) { resume = resumes[i]; break; }
+  for (var i = 0; i < currentResumes.length; i++) {
+    if (currentResumes[i].id === id) {
+      var r = currentResumes[i];
+      if (!r.file_data) { alert('没有可下载的文件'); return; }
+      var link = document.createElement('a');
+      link.href = r.file_data;
+      link.download = r.file_name || 'resume.pdf';
+      link.click();
+      return;
+    }
   }
-  if (!resume || !resume.fileData) {
-    alert('没有可下载的文件');
-    return;
-  }
-  
-  var link = document.createElement('a');
-  link.href = resume.fileData;
-  link.download = resume.fileName || 'resume.pdf';
-  link.click();
-}
-
-// ==================== Import/Export ====================
-function exportData() {
-  var data = {
-    jobs: getJobs(),
-    resumes: getResumes(),
-    exportedAt: new Date().toISOString(),
-    user: getCurrentUser()
-  };
-  
-  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  var url = URL.createObjectURL(blob);
-  var link = document.createElement('a');
-  link.href = url;
-  link.download = 'job-tracker-' + getCurrentUser() + '-' + new Date().toISOString().split('T')[0] + '.json';
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-function importData() {
-  var input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json';
-  input.onchange = function(e) {
-    var file = e.target.files[0];
-    if (!file) return;
-    
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        var data = JSON.parse(e.target.result);
-        if (data.jobs) saveJobs(data.jobs);
-        if (data.resumes) saveResumes(data.resumes);
-        renderAll();
-        alert('导入成功！');
-      } catch (err) {
-        alert('导入失败：文件格式错误');
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
 }
 
 // ==================== Tab Switch ====================
@@ -1310,23 +963,53 @@ function switchTab(tab) {
   var btns = document.querySelectorAll('.tab-btn');
   for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
   document.querySelector('.tab-btn[onclick="switchTab(\'' + tab + '\')"]').classList.add('active');
-  
   document.getElementById('jobsTab').classList.add('hidden');
   document.getElementById('resumesTab').classList.add('hidden');
   document.getElementById(tab + 'Tab').classList.remove('hidden');
 }
 
-// ==================== Init ====================
-function init() {
-  var user = getCurrentUser();
-  if (user) {
-    showApp();
-  } else {
-    showLoginPage();
-  }
+// ==================== Refresh & Init ====================
+async function refreshAll() {
+  currentJobs = await fetchJobs();
+  currentResumes = await fetchResumes();
+  renderAll();
 }
 
-init();
+async function showApp() {
+  var { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('appPage').style.display = 'block';
+  document.getElementById('currentUser').textContent = user.email;
+  await refreshAll();
+}
+
+function showAuthPage() {
+  document.getElementById('appPage').style.display = 'none';
+  document.getElementById('authPage').style.display = 'flex';
+}
+
+// Listen for auth state changes
+supabase.auth.onAuthStateChange(function(event, session) {
+  if (session) {
+    showApp();
+  } else {
+    showAuthPage();
+    currentJobs = [];
+    currentResumes = [];
+  }
+});
+
+// Initial check
+(async function init() {
+  var { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    await showApp();
+  } else {
+    showAuthPage();
+  }
+})();
 </script>
 </body>
 </html>
