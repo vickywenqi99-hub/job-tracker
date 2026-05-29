@@ -292,6 +292,7 @@ var $ = function(id) { return document.getElementById(id); };
 // ==================== Auth UI ====================
 var currentJobs = [];
 var currentResumes = [];
+var currentUserId = null;
 
 function showMsg(type, text) {
   var el = $('authMsg');
@@ -452,6 +453,7 @@ function showMigrationBanner(oldData) {
     for (var i = 0; i < oldData.jobs.length; i++) {
       var j = oldData.jobs[i];
       var { error } = await supabase.from('jobs').insert([{
+        user_id: currentUserId,
         company: j.company || '',
         position: j.position || '',
         salary: j.salary || null,
@@ -470,6 +472,7 @@ function showMigrationBanner(oldData) {
     for (var k = 0; k < oldData.resumes.length; k++) {
       var r = oldData.resumes[k];
       var { error } = await supabase.from('resumes').insert([{
+        user_id: currentUserId,
         version: r.version || '',
         date: r.date || null,
         summary: r.summary || null,
@@ -669,7 +672,7 @@ async function saveJob() {
   var btn = $('jobSaveBtn');
   btn.disabled = true; btn.textContent = '保存中...';
   
-  var data = { company: company, position: position, salary: $('jobSalary').value.trim() || null, location: $('jobLocation').value.trim() || null, date: $('jobDate').value || null, link: $('jobLink').value.trim() || null, status: $('jobStatus').value, contact: $('jobContact').value.trim() || null, interview: $('jobInterview').value.trim() || null, notes: $('jobNotes').value.trim() || null, updated_at: new Date().toISOString() };
+  var data = { user_id: currentUserId, company: company, position: position, salary: $('jobSalary').value.trim() || null, location: $('jobLocation').value.trim() || null, date: $('jobDate').value || null, link: $('jobLink').value.trim() || null, status: $('jobStatus').value, contact: $('jobContact').value.trim() || null, interview: $('jobInterview').value.trim() || null, notes: $('jobNotes').value.trim() || null, updated_at: new Date().toISOString() };
   
   var error;
   if (editId) { var r = await supabase.from('jobs').update(data).eq('id', parseInt(editId)); error = r.error; }
@@ -777,7 +780,7 @@ async function saveResume() {
   var editId = $('resumeEditId').value;
   var btn = $('resumeSaveBtn'); btn.disabled = true; btn.textContent = '保存中...';
   
-  var data = { version: version, date: $('resumeDate').value || null, summary: $('resumeSummary').value.trim() || null, file_name: currentFileName, file_data: currentFileData, updated_at: new Date().toISOString() };
+  var data = { user_id: currentUserId, version: version, date: $('resumeDate').value || null, summary: $('resumeSummary').value.trim() || null, file_name: currentFileName, file_data: currentFileData, updated_at: new Date().toISOString() };
   
   var error;
   if (editId) { var r = await supabase.from('resumes').update(data).eq('id', parseInt(editId)); error = r.error; }
@@ -818,6 +821,7 @@ async function showApp(user) {
   $('authPage').style.display = 'none';
   $('appPage').style.display = 'block';
   $('currentUser').textContent = user.email;
+  currentUserId = user.id;
   
   await refreshAll();
   
